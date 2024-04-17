@@ -7,13 +7,12 @@
 #include <list>
 using namespace std;
 
-#include "seqmodel.h"
+#include "ivy.h"
 #include "io.h"
+#include "error.h"
+#include "model.h"
 #include "modelI.h"
-#include "modelV.h"
-#include "modelY.h"
-#include "modelX.h"
-#include "utilities.h"
+#include "process_sequences.h"
 
 int main(int argc, const char **argv){
 
@@ -22,8 +21,10 @@ int main(int argc, const char **argv){
     
     //Initialise random number generator
     
+    //Get parameters
 	run_params p;
 	GetParameters(p,argc,argv);
+    //Setup random numbers
     p.seed=(int) time(NULL);
     gsl_rng_env_setup();
     gsl_rng *rgen = gsl_rng_alloc (gsl_rng_taus);
@@ -33,18 +34,13 @@ int main(int argc, const char **argv){
     vector<string> seqs;
     //Read in sequence alignment
     ReadFastaAli (p,seqs);
-    if (seqs.size()==0) {
-        cout << "Error: No sequence data\n";
-        return 0;
-    }
     //Read times for each sample
     vector<int> times;
     ReadTimes (p,times);
-    if (times.size()!=seqs.size()) {
-        cout << "Error: Mismatch between time and sequence data\n";
+    int err=CheckInputs (seqs,times);
+    if (err==1) {
         return 0;
     }
-
 
     //Find consensus sequence
     string all_consensus;
@@ -79,6 +75,7 @@ int main(int argc, const char **argv){
     //are considered to be within the same set.  Therefore, we want to split at this point, on getting varbin
     
     if (p.model.compare("I")==0)  { //Number of sets.  Here consider everything together
+        p.sets=1;
         ModelSinglePopulation(p,times,varbin,rgen);
     }
 
@@ -86,14 +83,14 @@ int main(int argc, const char **argv){
         //Trial code for finding samples that have to go together in a population
         p.sets=2;
         //Run model V
-        RunModelV (p,times,varbin,rgen);
+        RunModel (p,times,varbin,rgen);
     }
     
     if (p.model.compare("Y")==0) {
         //Trial code for finding samples that have to go together in a population
         p.sets=3;
         //Run model Y
-        RunModelY (p,times,varbin,rgen);
+        RunModel (p,times,varbin,rgen);
         
     }
 
@@ -102,7 +99,7 @@ int main(int argc, const char **argv){
         //Trial code for finding samples that have to go together in a population
         p.sets=4;
         //Run model X
-        RunModelX (p,times,varbin,rgen);
+        RunModel (p,times,varbin,rgen);
         
     }
 

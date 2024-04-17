@@ -1,7 +1,8 @@
-#include "seqmodel.h"
-#include "io.h"
+#include "ivy.h"
 #include "modelI.h"
-#include "utilities.h"
+#include "model.h"
+#include "io.h"
+#include "model_tools.h"
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -95,7 +96,7 @@ void ModelSinglePopulation (run_params& p, vector<int> times, vector< vector<dou
     cout << "Rate " << model_parameters_best[0] << "\n";
     cout << "Error " << model_parameters_best[1] << "\n";
     vector< vector<double> > limits;
-    InitialiseLimits (model_parameters_best,limits);
+    InitialiseLimits (p,model_parameters_best,limits);
     vector<double> extreme_model_parameters;
     SingleRateModelExtremes (p,best_likelihood,seq_data_record,model_parameters_record,extreme_model_parameters,limits,rgen);
     WriteLimits(limits);
@@ -180,7 +181,7 @@ void OptimiseSingleRateModel (run_params& p, const vector<sample>& seq_data, vec
                 rate_best=rate;
                 error_best=error;
                 lL_best=lL;
-               // cout << "Better " << rate << " " << error << " " << lL << "\n";
+                //cout << "Better " << rate << " " << error << " " << lL << "\n";
             } else {
                 rate=rate_best;
                 error=error_best;
@@ -206,15 +207,22 @@ void OptimiseSingleRateModel (run_params& p, const vector<sample>& seq_data, vec
             if (seq_data[i].nfix>=0) {
                 int done=0;
                 double r=rate*seq_data[i].dt;
+                //cout << "Here " << rate << " " << seq_data[i].dt << " " << seq_data[i].nfix << " ";
+
                 if (r==0&&seq_data[i].nfix>0) {//dt is zero: Will happen if we put an initial time-point at the beginning and the first time is zero
                     lL=lL-1e9;
+                    //cout << "Now -1e9" << "\n";
                     done=1;
                 }
                 if (done==0) {
-                    if (r>0||seq_data[i].nfix>=0) {
+                    if (r>0&&seq_data[i].nfix>=0) {
                         lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfix,r));
+                       // cout << gsl_ran_poisson_pdf(seq_data[i].nfix,r) << " " << log(gsl_ran_poisson_pdf(seq_data[i].nfix,r)) << "\n";
+
                     }
                     lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error));
+                    //cout << "F " << seq_data[i].nfluc << " " << error << " " << log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error)) << " " << lL << "\n";
+
                     /*
                     if (seq_data[i].xfluc.size()==0) {
                         lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error));
@@ -231,7 +239,7 @@ void OptimiseSingleRateModel (run_params& p, const vector<sample>& seq_data, vec
     model_parameters[0]=rate_best;
     model_parameters[1]=error_best;
     model_parameters[2]=lL_best;
-    //cout << "Optimised rate " << rate_best << " error " << error_best << " lL " << lL_best << "\n";
+    cout << "Optimised rate " << rate_best << " error " << error_best << " lL " << lL_best << "\n";
 
 }
 
@@ -345,29 +353,32 @@ void UncertaintySingleRateModel (run_params& p, int parameter, int direction, do
         }
         
         //Evaluate the likelihood
-        lL=0;
         for (int i=0;i<seq_data.size();i++) {
-            double r=rate*seq_data[i].dt;
-            if (r==0) {//dt is zero: Will happen if we put an initial time-point at the beginning and the first time is zero
-                if (seq_data[i].nfix>0) {
+            if (seq_data[i].nfix>=0) {
+                int done=0;
+                double r=rate*seq_data[i].dt;
+                if (r==0&&seq_data[i].nfix>0) {//dt is zero: Will happen if we put an initial time-point at the beginning and the first time is zero
                     lL=lL-1e9;
+                    done=1;
                 }
-            } else {
-                if (seq_data[i].nfix>=0) {
-                    lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfix,r));
-                }
-                if (seq_data[i].nfluc>=0||seq_data[i].xfluc.size()>0) {
-                    if (seq_data[i].xfluc.size()==0) {
-                        lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error));
-                    } else {
-                        //Account for uncertainty in the number of flucutations arising from ambiguous nucleotides
-                        for (int j=0;j<seq_data[i].xfluc.size();j++) {
-                            lL=lL+seq_data[i].xfluc[j]*log(gsl_ran_poisson_pdf(seq_data[i].nfluc+j,error));
-                        }
+                if (done==0) {
+                    if (r>0||seq_data[i].nfix>=0) {
+                        lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfix,r));
                     }
+                    lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error));
+                    /*
+                     if (seq_data[i].xfluc.size()==0) {
+                     lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error));
+                     } else {
+                     //Account for uncertainty in the number of flucutations arising from ambiguous nucleotides
+                     for (int j=0;j<seq_data[i].xfluc.size();j++) {
+                     lL=lL+seq_data[i].xfluc[j]*log(gsl_ran_poisson_pdf(seq_data[i].nfluc+j,error));
+                     }
+                     }*/
                 }
             }
         }
+        
         //cout << "Likelihood " << lL << "\n";
     }
   //  cout << "Extreme parameters " << extreme_model_parameters[0] << " " << extreme_model_parameters[1] << " " << extreme_model_parameters[2] << "\n";
@@ -375,6 +386,76 @@ void UncertaintySingleRateModel (run_params& p, int parameter, int direction, do
 }
 
 
+void SetupModelParameters (vector<double>& model_parameters) {
+    for (int i=0;i<3;i++) {
+        model_parameters.push_back(-1e6);
+    }
+}
+
+void FindBestModelParameters (run_params& p, int pre_subs, vector<sample>& seq_data_best, const vector< vector<sample> >& seq_data_array, int& index_best, vector<double>& model_parameters, vector<double>& model_parameters_best, vector< vector<sample> >& seq_data_record, vector<int>& fixpos, vector<int>& qfixpos, vector<int>& removed, vector< vector<double> >& model_parameters_record, gsl_rng *rgen) {
+    //Finds the best across an array of points
+    for (int i=0;i<seq_data_array.size();i++) {
+        /*if (p.verb==1) {
+            cout << "Sequence input\n";
+            for (int j=0;j<seq_data_array[i].size();j++) {
+                cout << j << " " << seq_data_array[i][j].dt << " " << seq_data_array[i][j].nfix << " " << seq_data_array[i][j].nfluc << " " << seq_data_array[i][j].xfluc.size() << " ";
+                for (int j=0;j<seq_data_array[i][j].xfluc.size();j++) {
+                    cout << seq_data_array[i][j].xfluc[j] << " ";
+                }
+                cout << "\n";
+            }
+        }*/
+        OptimiseSingleRateModel (p,seq_data_array[i],model_parameters,rgen);
+        seq_data_record.push_back(seq_data_array[i]);
+        model_parameters_record.push_back(model_parameters);
+        if (model_parameters[2]>-1e+9) {
+            cout << "Index " << i << " Rate " << model_parameters[0] << " Prior Substitutions " << pre_subs << " Fixes " << fixpos.size()-qfixpos.size() << " ";
+            for (int k=0;k<fixpos.size();k++) {
+                int match=0;
+                for (int l=0;l<qfixpos.size();l++) {
+                    if (qfixpos[l]==fixpos[k]) {
+                        match=1;
+                    }
+                }
+                if (match==0) {
+                    cout << fixpos[k] << " ";
+                }
+            }
+            cout << "Provisional " << qfixpos.size();
+            for (int l=0;l<qfixpos.size();l++) {
+                cout << qfixpos[l] << " ";
+            }
+
+            //Want to output how many are removed...
+            cout << " Removed " << removed[i];
+            cout << " Likelihood " << model_parameters[2] << "\n";
+        }
+        if (model_parameters[2]>model_parameters_best[2]) {
+            model_parameters_best=model_parameters;
+            index_best=i;
+            seq_data_best=seq_data_array[index_best];
+        }
+    }
+    if (p.verb==1) {
+        if (index_best>-1) {
+            cout << "Best index " << index_best << " ";
+            for (int i=0;i<model_parameters_best.size();i++) {
+                cout << model_parameters_best[i] << " ";
+            }
+            cout << "\n";
+            
+            /*cout << "Corresponding sequence input\n";
+            for (int j=0;j<seq_data_array[index_best].size();j++) {
+                cout << j << " " << seq_data_array[index_best][j].dt << " " << seq_data_array[index_best][j].nfix << " " << seq_data_array[index_best][j].nfluc << " " << seq_data_array[index_best][j].xfluc.size() << " ";
+                for (int j=0;j<seq_data_array[index_best][j].xfluc.size();j++) {
+                    cout << seq_data_array[index_best][j].xfluc[j] << " ";
+                }
+                cout << "\n";
+            }*/
+
+        }
+    }
+}
 
 
 

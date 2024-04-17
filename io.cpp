@@ -1,5 +1,7 @@
-#include "seqmodel.h"
+#include "ivy.h"
 #include "io.h"
+#include "model.h"
+#include "modelI.h"
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -95,6 +97,7 @@ void ReadTimes (run_params p, vector<int>& times) {
     }
 }
 
+
 void WriteVariants (run_params& p, const vector<sparseseq>& variants) {
     if (p.verb==1) {
         for (int i=0;i<variants.size();i++) {
@@ -133,6 +136,70 @@ void WriteVariantsToFile (run_params& p, const vector<char>& consensus, const ve
     var_file.close();
 }
 
+void WriteVarbin(const vector< vector<double> >& varbin) {
+    cout << "Varbin\n";
+    for (int i=0;i<varbin.size();i++) {
+        for (int j=0;j<varbin[i].size();j++) {
+            cout << varbin[i][j] << " ";
+        }
+        cout << "\n";
+    }
+}
+
+void Indexing (run_params& p, int i, modelstore m, vector<double> model_parameters, const vector< vector<int> >& gfixpos, const vector< vector<int> >& gqfixpos, const vector< vector<int> >& nremoved) {
+    cout << "Index " << i << " ";
+    for (int pp=0;pp<p.sets;pp++) {
+        cout << "Population " << pp << " Rate " << model_parameters[pp] << " Fixes " << gfixpos[pp].size()-gqfixpos[pp].size() << " ";
+        for (int k=0;k<gfixpos[pp].size();k++) {
+            int match=0;
+            for (int l=0;l<gqfixpos[pp].size();l++) {
+                if (gqfixpos[pp][l]==gfixpos[pp][k]) {
+                    match=1;
+                }
+            }
+            if (match==0) {
+                cout << gfixpos[pp][k] << " ";
+            }
+        }
+        cout << "Provisional " << gqfixpos[pp].size() << " ";
+        for (int l=0;l<gqfixpos[pp].size();l++) {
+            cout << gqfixpos[pp][l] << " ";
+        }
+        cout << "Removed " << nremoved[i][pp] << " ";
+    }
+    cout << "Likelihood " << m.lL << "\n";
+}
+
+void OutputBestModelParameters (int max_index, vector<modelstore>& outputs) {
+    cout << "Best model " << max_index << "\n";
+    cout << "Best parameters\n";
+    for (int j=0;j<outputs[max_index].rates.size();j++) {
+        cout << outputs[max_index].rates[j] << " ";
+    }
+    cout << outputs[max_index].error << " " << outputs[max_index].lL << "\n";
+}
+
+
+void WriteLimits(const vector< vector<double> >& limits) {
+    cout << "Parameter uncertainties\n";
+    for (int i=0;i<limits.size();i++) {
+        if (i<limits.size()-1) {
+            cout << "Rate  ";
+        } else {
+            cout << "Error ";
+        }
+        for (int j=0;j<limits[i].size();j++) {
+            cout << limits[i][j] << " ";
+        }
+        cout << "\n";
+    }
+}
+
+
+
+
+
+
 void SortVariantData (sparseseq& allvars) {
     sparseseq allvars_sort;
     vector<int> index;
@@ -157,20 +224,6 @@ void SortVariantData (sparseseq& allvars) {
     allvars=allvars_sort;
 }
 
-void WriteLimits(const vector< vector<double> >& limits) {
-    cout << "Parameter uncertainties\n";
-    for (int i=0;i<limits.size();i++) {
-        if (i<limits.size()-1) {
-            cout << "Rate  ";
-        } else {
-            cout << "Error ";
-        }
-        for (int j=0;j<limits[i].size();j++) {
-            cout << limits[i][j] << " ";
-        }
-        cout << "\n";
-    }
-}
 
 void WriteAcceptable (vector< vector<double> >& acceptable) {
     for (int i=0;i<acceptable.size();i++) {
@@ -204,12 +257,4 @@ void WriteGVarbin (const vector< vector<int> >& gtimes, const vector< vector< ve
     }
 }
 
-void OutputBestModelParametersV (int max_index, vector<modelstore>& outputs) {
-    cout << "Best model " << max_index << "\n";
-    cout << "Best parameters\n";
-    for (int j=0;j<outputs[max_index].rates.size();j++) {
-        cout << outputs[max_index].rates[j] << " ";
-    }
-    cout << outputs[max_index].error << " " << outputs[max_index].lL << "\n";
-}
 

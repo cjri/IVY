@@ -1,9 +1,10 @@
-#include "seqmodel.h"
+#include "ivy.h"
 #include "io.h"
-#include "modelV.h"
-#include "modelY.h"
+#include "likelihood.h"
+#include "model.h"
+#include "model_tools.h"
+#include "process_sequences.h"
 #include "statespace.h"
-#include "utilities.h"
 #include <iostream>
 #include <string>
 #include <cstring>
@@ -30,14 +31,7 @@ void ModelRateExploration (run_params& p, int i, const double maxL, const vector
     if (max>2) {
         //cout << "Running inferences...\n";
         vector< vector<int> > start_seqs;
-        if (p.model.compare("Y")==0) {
-            //cout << "Diagnosed model Y\n";
-            GetStartSeqsY (p,gvarbin,start_seqs);
-        }
-        if (p.model.compare("V")==0) {
-            //cout << "Diagnosed model V\n";
-            GetStartSeqsV (p,gvarbin,start_seqs);
-        }
+        GetStartSeqs (p,gvarbin,start_seqs);
         
         vector<double> varbin_init;
         for (int st=0;st<start_seqs.size();st++){  //Loop over potential start points
@@ -47,31 +41,12 @@ void ModelRateExploration (run_params& p, int i, const double maxL, const vector
             //Make temporary samples with this point added
             gvarbin=gvarbin_orig;
             gtimes=gtimes_orig;
-            AddStartToGVarbin (varbin_init,gvarbin);
-            RevertGVarbin(gvarbin);
-            AddStartToGTimes (gtimes);
-            vector< vector< vector<double> > > gconstant;
-            vector< vector< vector<double> > > gfixes;
-            MakeGConstantFix (p,gvarbin,gconstant,gfixes);
-            //Test variant data against constant and fix vectors
+            vector< vector<int> > nremoved;
             vector< vector<int> > gfixpos;
-            vector< vector<int> > gflucpos;
-            MakeGFixFluc (p,gvarbin,gconstant,gfixes,gfixpos,gflucpos);
-            vector< vector<int> > gfixtimes;
-            MakeGFixTimes (p,gvarbin,gfixpos,gfixtimes);
-            //Find positions of fixation events
             vector< vector<int> > gqfixpos;
-            vector<int> gnq;
-            MakeGQFixPos (p,gvarbin,gfixpos,gfixtimes,gqfixpos,gnq);
-            vector< vector<sample> > gseq_data;
-            MakeGSeqData (p,gvarbin,gtimes,gfixtimes,gfixpos,gflucpos,gseq_data);
-            vector< vector<int> > nremoved;  //Count of how many fixations are removed from the final timepoint
             vector< vector< vector<sample> > > gseq_data_array;
-            if (p.model.compare("Y")==0) {
-                MakeGSDataArrayY (p,gnq,gseq_data,nremoved,gseq_data_array);
-            } else if (p.model.compare("V")==0) {
-                MakeGSDataArrayV (p,gnq,gseq_data,nremoved,gseq_data_array);
-            }
+            //Series of routines to compile an array containing all of the data neded for the optimisation
+            GetGSeqDataArray (p,varbin_init,gvarbin,gtimes,gfixpos,gqfixpos,nremoved,gseq_data_array);
 
             //Change the code here: Use data from previous outputs and do the calculation in discrete space.  NB Need to import the outputs.
 
@@ -80,17 +55,6 @@ void ModelRateExploration (run_params& p, int i, const double maxL, const vector
             } else if (p.model.compare("V")==0) {
                 CalculateStateSpace(p,2,st,maxL,start_seqs,nremoved,gfixpos,gqfixpos,gseq_data_array,outputs,acceptable);
             }
-            varbin_init.clear();
-            gconstant.clear();
-            gfixes.clear();
-            gfixpos.clear();
-            gflucpos.clear();
-            gfixtimes.clear();
-            gqfixpos.clear();
-            gnq.clear();
-            gseq_data.clear();
-            nremoved.clear();
-            gseq_data_array.clear();
         }
             
     } else {
@@ -379,37 +343,6 @@ double EvaluateLikelihood (run_params& p, int n_rates, const vector< vector<samp
         model_parameters[n_rates]=p.fix_error;
     }
     //Evaluate the likelihood
-    double lL=0;
-    for (int i=0;i<gseq_data.size();i++) {
-        for (int j=0;j<gseq_data[i].size();j++) {
-            double r=model_parameters[i]*gseq_data[i][j].dt;
-            int done=0;
-            if (r==0&&gseq_data[i][j].dt>0) {
-                lL=lL-1e9;
-                done=1;
-            }
-            if (done==0) {
-                if (r>0||gseq_data[i][j].nfix>0) {
-                    lL=lL+log(gsl_ran_poisson_pdf(gseq_data[i][j].nfix,r));
-                }
-                lL=lL+log(gsl_ran_poisson_pdf(gseq_data[i][j].nfluc,model_parameters[n_rates]));
-
-                /*if (gseq_data[i][j].nfluc>=0||gseq_data[i][j].xfluc.size()>0) {
-                    if (gseq_data[i][j].xfluc.size()==0) {
-                        lL=lL+log(gsl_ran_poisson_pdf(gseq_data[i][j].nfluc,model_parameters[n_rates]));
-                    } else {
-                        //Account for uncertainty in the number of flucutations arising from ambiguous nucleotides
-                        for (int j=0;j<gseq_data[i][j].xfluc.size();j++) {
-                            lL=lL+gseq_data[i][j].xfluc[j]*log(gsl_ran_poisson_pdf(gseq_data[i][j].nfluc+j,model_parameters[n_rates]));
-                        }
-                    }
-                }*/
-            }
-        }
-    }
-    
-    
-    
-
+    double lL=FindLikelihood (n_rates,model_parameters,model_parameters[n_rates],gseq_data);
     return(lL);
 }

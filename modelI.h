@@ -10,3 +10,5 @@ void UncertaintySingleRateModel (run_params& p, int parameter, int direction, do
 
 
 
+void SetupModelParameters (vector<double>& model_parameters);
+void FindBestModelParameters (run_params& p, int pre_subs, vector<sample>& seq_data_best, const vector< vector<sample> >& seq_data_array, int& index_best, vector<double>& model_parameters, vector<double>& model_parameters_best, vector< vector<sample> >& seq_data_record, vector<int>& fixpos, vector<int>& qfixpos, vector<int>& removed, vector< vector<double> >& model_parameters_record, gsl_rng *rgen);
