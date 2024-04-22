@@ -1,0 +1,6 @@
+Simulation directories contain the raw input material to run the simulation calculations described in the manusceript accompanying the IVY software package.  Calculations make use of the GNU Parallel software package, which can be installed from the relevant website: https://www.gnu.org/software/parallel/
+
+In the absence of installing GNU parallel, the scripts to run simulation inferences can simply be rewritten to perform a simple loop, running calculations on a single processor.
+
+Calculations involving models Y and X take some time to perform, up to 48 hours for a calculation on a single processor for model X.
+
