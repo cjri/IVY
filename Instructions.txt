@@ -1,0 +1,23 @@
+The IVY code fits models of evolution to consensus sequence data describing viral infection in a single host.  The results of IVY can be used to identify the minimum number of viral subpopulations within an individual that are needed to explain the sequences observed from that individual.
+
+Inputs:
+
+Sequences.fa: A file in .fasta format describing seuqences collected from an individual
+
+Times.dat: A file describing the days on which the sequences in Sequences.fa were collected.  An assumption is made that the sequences are in the same order as the days.
+
+Options:
+
+--input <file> [Default Sequences.fa] : Specifies the name of the .fasta file.
+
+--times <file> [Default Times.dat] : Specifies the name of the file containing times of collecting sequences.
+
+--model <model> : Specify the model to use from the set {I, V, Y, X}, which denote respectively one, two, three, and four independent within-host populations.
+
+--error e [Default unspecified] : IVY infers an error rate for sequencing, defined as a Poisson parameter.  If an error rate is specified (as it was in the manuscript accompanying this code, the error rate will be fixed, rather than optimised.  We have not tested the performance of our code while optimising an error rate.
+
+--sysetmatic s [Default 1] : By default a systematic search is conducted over all possible ways in which the sequences can be partitioned into subpopulations.  Setting this to zero whill examine only a specific set.
+
+--set s [No default] : Specifies the set to examine under the flag --systematic 0.
+
+--uncertainty u [Default 0] : Setting this flag to 1 carries out a one-dimensional exploration of the extent to which each rate parameter can be changed while remaining within 2 units of the maximum log likelihood.  Setting this flag to 2 carries out a grid-based exploration of which co-dependent changes in parameter can occur while remaining within 2 units o the maximum log likelihood.  The u=2 option has been implemented only for the V and Y models.

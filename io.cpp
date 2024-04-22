@@ -17,7 +17,7 @@ void GetParameters (run_params& p, int argc, const char **argv) {
     p.chosen_set=-1;
     p.fix_error=-1; //Fixed error rate.  -1 implies unfixed
     p.times_file="Times.dat";
-    p.seqs_file="Sets.in";
+    p.seqs_file="Sequences.fa";
     p.fix=0;
     while (x < argc && (argv[x][0]=='-')) {
 		p_switch=argv[x];
