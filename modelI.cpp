@@ -202,45 +202,50 @@ void OptimiseSingleRateModel (run_params& p, const vector<sample>& seq_data, vec
         
         //Original code
         //Evaluate the likelihood
-        lL=0;
-        for (int i=0;i<seq_data.size();i++) {
-            if (seq_data[i].nfix>=0) {
-                int done=0;
-                double r=rate*seq_data[i].dt;
-                //cout << "Here " << rate << " " << seq_data[i].dt << " " << seq_data[i].nfix << " ";
-
-                if (r==0&&seq_data[i].nfix>0) {//dt is zero: Will happen if we put an initial time-point at the beginning and the first time is zero
-                    lL=lL-1e9;
-                    //cout << "Now -1e9" << "\n";
-                    done=1;
-                }
-                if (done==0) {
-                    if (r>0&&seq_data[i].nfix>=0) {
-                        lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfix,r));
-                       // cout << gsl_ran_poisson_pdf(seq_data[i].nfix,r) << " " << log(gsl_ran_poisson_pdf(seq_data[i].nfix,r)) << "\n";
-
-                    }
-                    lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error));
-                    //cout << "F " << seq_data[i].nfluc << " " << error << " " << log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error)) << " " << lL << "\n";
-
-                    /*
-                    if (seq_data[i].xfluc.size()==0) {
-                        lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error));
-                    } else {
-                        //Account for uncertainty in the number of flucutations arising from ambiguous nucleotides
-                        for (int j=0;j<seq_data[i].xfluc.size();j++) {
-                            lL=lL+seq_data[i].xfluc[j]*log(gsl_ran_poisson_pdf(seq_data[i].nfluc+j,error));
-                        }
-                    }*/
-                }
-            }
-        }
+        lL=GetSingleLikelihood (rate,error,seq_data);
     }
     model_parameters[0]=rate_best;
     model_parameters[1]=error_best;
     model_parameters[2]=lL_best;
     cout << "Optimised rate " << rate_best << " error " << error_best << " lL " << lL_best << "\n";
 
+}
+
+double GetSingleLikelihood (double& rate, double& error, const vector<sample>& seq_data) {
+    double lL=0;
+    for (int i=0;i<seq_data.size();i++) {
+        if (seq_data[i].nfix>=0) {
+            int done=0;
+            double r=rate*seq_data[i].dt;
+            //cout << "Here " << rate << " " << seq_data[i].dt << " " << seq_data[i].nfix << " ";
+            
+            if (r==0&&seq_data[i].nfix>0) {//dt is zero: Will happen if we put an initial time-point at the beginning and the first time is zero
+                lL=lL-1e9;
+                //cout << "Now -1e9" << "\n";
+                done=1;
+            }
+            if (done==0) {
+                if (r>0&&seq_data[i].nfix>=0) {
+                    lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfix,r));
+                    // cout << gsl_ran_poisson_pdf(seq_data[i].nfix,r) << " " << log(gsl_ran_poisson_pdf(seq_data[i].nfix,r)) << "\n";
+                    
+                }
+                lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error));
+                //cout << "F " << seq_data[i].nfluc << " " << error << " " << log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error)) << " " << lL << "\n";
+                
+                /*
+                 if (seq_data[i].xfluc.size()==0) {
+                 lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error));
+                 } else {
+                 //Account for uncertainty in the number of flucutations arising from ambiguous nucleotides
+                 for (int j=0;j<seq_data[i].xfluc.size();j++) {
+                 lL=lL+seq_data[i].xfluc[j]*log(gsl_ran_poisson_pdf(seq_data[i].nfluc+j,error));
+                 }
+                 }*/
+            }
+        }
+    }
+    return lL;
 }
 
 void GetOptimisationData (double& best_likelihood, vector< vector<sample> >& seq_data_record, vector< vector<double> >& model_parameters_record) {
@@ -285,6 +290,7 @@ void SingleRateModelExtremes (run_params& p, double best_likelihood, vector< vec
 }
 
 void UncertaintySingleRateModel (run_params& p, int parameter, int direction, double best_likelihood, const vector<sample>& seq_data, vector<double> initial_model_parameters, vector<double>& model_parameters, vector<double>& extreme_model_parameters, gsl_rng *rgen) {
+    //cout << " Uncertainty model " << best_likelihood << "\n";
     double rate=initial_model_parameters[0];
     double error=initial_model_parameters[1];
     extreme_model_parameters=model_parameters;
@@ -301,7 +307,7 @@ void UncertaintySingleRateModel (run_params& p, int parameter, int direction, do
     for (int it=0;it<100000;it++) {
         if (first==0) {
             if (lL>lL_best-2) {
-              //  cout << lL << " " << rate << " " << error << "\n";
+                //cout << lL << " " << rate << " " << error << "\n";
                 model_parameters[0]=rate;
                 model_parameters[1]=error;
                 model_parameters[2]=lL;
@@ -348,37 +354,15 @@ void UncertaintySingleRateModel (run_params& p, int parameter, int direction, do
                     rate=rate+(gsl_rng_uniform(rgen)*dx/2);
                 } else {
                     rate=rate-(gsl_rng_uniform(rgen)*dx/2);
+                    if (rate<0) {
+                        rate=-rate;
+                    }
                 }
             }
         }
         
         //Evaluate the likelihood
-        for (int i=0;i<seq_data.size();i++) {
-            if (seq_data[i].nfix>=0) {
-                int done=0;
-                double r=rate*seq_data[i].dt;
-                if (r==0&&seq_data[i].nfix>0) {//dt is zero: Will happen if we put an initial time-point at the beginning and the first time is zero
-                    lL=lL-1e9;
-                    done=1;
-                }
-                if (done==0) {
-                    if (r>0||seq_data[i].nfix>=0) {
-                        lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfix,r));
-                    }
-                    lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error));
-                    /*
-                     if (seq_data[i].xfluc.size()==0) {
-                     lL=lL+log(gsl_ran_poisson_pdf(seq_data[i].nfluc,error));
-                     } else {
-                     //Account for uncertainty in the number of flucutations arising from ambiguous nucleotides
-                     for (int j=0;j<seq_data[i].xfluc.size();j++) {
-                     lL=lL+seq_data[i].xfluc[j]*log(gsl_ran_poisson_pdf(seq_data[i].nfluc+j,error));
-                     }
-                     }*/
-                }
-            }
-        }
-        
+        lL=GetSingleLikelihood (rate,error,seq_data);
         //cout << "Likelihood " << lL << "\n";
     }
   //  cout << "Extreme parameters " << extreme_model_parameters[0] << " " << extreme_model_parameters[1] << " " << extreme_model_parameters[2] << "\n";
@@ -421,7 +405,7 @@ void FindBestModelParameters (run_params& p, int pre_subs, vector<sample>& seq_d
                     cout << fixpos[k] << " ";
                 }
             }
-            cout << "Provisional " << qfixpos.size();
+            cout << "Provisional " << qfixpos.size() << " ";
             for (int l=0;l<qfixpos.size();l++) {
                 cout << qfixpos[l] << " ";
             }

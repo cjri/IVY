@@ -1,0 +1,5 @@
+The script do_all_calcs.sh reruns the different models in full for each of the sets of patient data.  For PatientH in particular this takes some time.  On a high-performance laptop model Y takes around one hour, but model X takes a long time and may not be worth running in full.
+
+The script do_final_calcs.sh reruns the final calculation with the IVY software package for each of the sets of patient data.  In this script, the best allocation of sequences to subpopulations has been identified from the previous calculations, and is specified using the --set flag.
+
+The script do_grid_calcs.sh runs a grid calculation for data from patients in whom more than one subpopulation was discovered.  It generates a grid of parameters which provide an acceptable likelihood (within 2 units of the maximum), providing a description of the uncertainty in parameter space.

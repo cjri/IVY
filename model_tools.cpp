@@ -668,6 +668,12 @@ void MakeGSDataArray (run_params& p, const vector<int>& gnq, const vector< vecto
             for (int i1=0;i1<gseq_data_temp[1].size();i1++) {
                 for (int i2=0;i2<gseq_data_temp[2].size();i2++) {
                     for (int i3=0;i3<gseq_data_temp[3].size();i3++) {
+                        vector<int> nr;
+                        nr.push_back(i0);
+                        nr.push_back(i1);
+                        nr.push_back(i2);
+                        nr.push_back(i3);
+                        nremoved.push_back(nr);
                         /*if (p.verb==1) {
                             cout << index << " " << i0 << " " << i1 << " " << i2 << " " << i3 << "\n";
                         }*/

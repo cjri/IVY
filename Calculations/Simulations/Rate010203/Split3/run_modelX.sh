@@ -1,0 +1,1 @@
+cat directoriesX | parallel --jobs 10 'echo {}; cd {} ; /Users/christopher.illingworth/Documents/GitHub/IVY/run_ivy --input PopSeqs.dat --times Times.in --model X --error 0.207 > Run_ModelXE.out ; cd ../'

@@ -1,0 +1,152 @@
+IQ-TREE multicore version 2.1.3 COVID-edition for Mac OS X 64-bit built Apr 20 2021
+Developed by Bui Quang Minh, James Barbetti, Nguyen Lam Tung,
+Olga Chernomor, Heiko Schmidt, Dominik Schrempf, Michael Woodhams.
+
+Host:    Chriss-MacBook-Pro.local (SSE4.2, 32 GB RAM)
+Command: /Users/chris/Documents/Programs/iqtree-2.1.3-MacOSX/bin/iqtree2 -s PopSeqs.dat
+Seed:    874563 (Using SPRNG - Scalable Parallel Random Number Generator)
+Time:    Fri Feb 17 15:01:40 2023
+Kernel:  SSE2 - 1 threads (10 CPU cores detected)
+
+HINT: Use -nt option to specify number of threads because your CPU has 10 cores!
+HINT: -nt AUTO will automatically determine the best number of threads to use.
+
+Reading alignment file PopSeqs.dat ... Fasta format detected
+Alignment most likely contains DNA/RNA sequences
+Alignment has 7 sequences with 29778 columns, 10 distinct patterns
+4 parsimony-informative, 2 singleton sites, 29772 constant sites
+           Gap/Ambiguity  Composition  p-value
+   1  Sequence0    0.00%    passed    100.00%
+   2  Sequence1    0.00%    passed    100.00%
+   3  Sequence2    0.00%    passed    100.00%
+   4  Sequence3    0.00%    passed    100.00%
+   5  Sequence4    0.00%    passed    100.00%
+   6  Sequence5    0.00%    passed    100.00%
+   7  Sequence6    0.00%    passed    100.00%
+****  TOTAL        0.00%  0 sequences failed composition chi2 test (p-value<5%; df=3)
+NOTE: Sequence2 is identical to Sequence1 but kept for subsequent analysis
+NOTE: 1 identical sequences (see below) will be ignored for subsequent analysis
+NOTE: Sequence3 (identical to Sequence1) is ignored but added at the end
+Alignment was printed to PopSeqs.dat.uniqueseq.phy
+
+For your convenience alignment with unique sequences printed to PopSeqs.dat.uniqueseq.phy
+
+
+Create initial parsimony tree by phylogenetic likelihood library (PLL)... 0.001 seconds
+Perform fast likelihood tree search using GTR+I+G model...
+Estimate model parameters (epsilon = 5.000)
+Perform nearest neighbor interchange...
+Estimate model parameters (epsilon = 1.000)
+1. Initial log-likelihood: -40465.065
+Optimal log-likelihood: -40464.986
+Rate parameters:  A-C: 2.10913  A-G: 0.00010  A-T: 1.08088  C-G: 3.66795  C-T: 0.00010  G-T: 1.00000
+Base frequencies:  A: 0.299  C: 0.184  G: 0.196  T: 0.321
+Proportion of invariable sites: 0.500
+Gamma shape alpha: 998.448
+Parameters optimization took 1 rounds (0.000 sec)
+Time for fast ML tree search: 0.002 seconds
+
+NOTE: ModelFinder requires 0 MB RAM!
+ModelFinder will test up to 286 DNA models (sample size: 29778) ...
+ No. Model         -LnL         df  AIC          AICc         BIC
+  1  GTR+F         40464.748    17  80963.496    80963.517    81104.622
+  2  GTR+F+I       40464.708    18  80965.417    80965.440    81114.844
+  3  GTR+F+G4      40464.708    18  80965.417    80965.440    81114.844
+  4  GTR+F+I+G4    40464.709    19  80967.419    80967.444    81125.148
+  5  GTR+F+R2      40464.706    19  80967.412    80967.438    81125.141
+  6  GTR+F+R3      40464.706    21  80971.412    80971.444    81145.744
+ 14  SYM           41347.810    14  82723.620    82723.634    82839.841
+ 27  TVM+F         40464.708    16  80961.417    80961.435    81094.241
+ 40  TVMe          41347.758    13  82721.517    82721.529    82829.437
+ 53  TIM3+F        40464.870    15  80959.739    80959.755    81084.262
+ 66  TIM3e         41347.897    12  82719.795    82719.805    82819.413
+ 79  TIM2+F        40467.286    15  80964.572    80964.588    81089.095
+ 92  TIM2e         41349.883    12  82723.766    82723.777    82823.385
+105  TIM+F         40467.179    15  80964.358    80964.374    81088.881
+118  TIMe          41349.555    12  82723.110    82723.120    82822.728
+131  TPM3u+F       40464.839    14  80957.678    80957.692    81073.899
+144  TPM3+F        40464.814    14  80957.628    80957.642    81073.849
+157  TPM2u+F       40467.286    14  80962.572    80962.586    81078.793
+170  TPM2+F        40467.286    14  80962.572    80962.586    81078.793
+183  K3Pu+F        40467.179    14  80962.358    80962.372    81078.580
+196  K3P           41349.555    11  82721.110    82721.119    82812.426
+209  TN+F          40467.415    14  80962.831    80962.845    81079.052
+222  TNe           41349.895    11  82721.789    82721.798    82813.106
+235  HKY+F         40467.415    13  80960.831    80960.843    81068.751
+248  K2P           41349.895    10  82719.789    82719.797    82802.804
+261  F81+F         40469.730    12  80963.459    80963.470    81063.078
+274  JC            41352.327    9   82722.654    82722.660    82797.368
+Akaike Information Criterion:           TPM3+F
+Corrected Akaike Information Criterion: TPM3+F
+Bayesian Information Criterion:         F81+F
+Best-fit model: F81+F chosen according to BIC
+
+All model information printed to PopSeqs.dat.model.gz
+CPU time for ModelFinder: 0.026 seconds (0h:0m:0s)
+Wall-clock time for ModelFinder: 0.036 seconds (0h:0m:0s)
+
+NOTE: 0 MB RAM (0 GB) is required!
+Estimate model parameters (epsilon = 0.100)
+1. Initial log-likelihood: -40469.730
+Optimal log-likelihood: -40469.730
+Rate parameters:  A-C: 1.00000  A-G: 1.00000  A-T: 1.00000  C-G: 1.00000  C-T: 1.00000  G-T: 1.00000
+Base frequencies:  A: 0.299  C: 0.184  G: 0.196  T: 0.321
+Parameters optimization took 1 rounds (0.000 sec)
+Computing ML distances based on estimated model parameters...
+Computing ML distances took 0.000559 sec (of wall-clock time) 0.000100 sec(of CPU time)
+WARNING: Some pairwise ML distances are too long (saturated)
+Computing RapidNJ tree took 0.000181 sec (of wall-clock time) 0.000018 sec (of CPU time)
+Log-likelihood of RapidNJ tree: -40469.936
+--------------------------------------------------------------------
+|             INITIALIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Generating 98 parsimony trees... 0.008 second
+Computing log-likelihood of 13 initial trees ... 0.001 seconds
+Current best score: -40469.730
+
+Do NNI search on 15 best initial trees
+UPDATE BEST LOG-LIKELIHOOD: -40469.730
+Iteration 10 / LogL: -40480.644 / Time: 0h:0m:0s
+Finish initializing candidate tree set (15)
+Current best tree score: -40469.730 / CPU time: 0.017
+Number of iterations: 15
+--------------------------------------------------------------------
+|               OPTIMIZING CANDIDATE TREE SET                      |
+--------------------------------------------------------------------
+Iteration 20 / LogL: -40469.936 / Time: 0h:0m:0s
+Iteration 30 / LogL: -40472.304 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 40 / LogL: -40469.730 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 50 / LogL: -40472.374 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 60 / LogL: -40469.730 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 70 / LogL: -40469.828 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 80 / LogL: -40472.304 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 90 / LogL: -40469.730 / Time: 0h:0m:0s (0h:0m:0s left)
+Iteration 100 / LogL: -40472.304 / Time: 0h:0m:0s (0h:0m:0s left)
+TREE SEARCH COMPLETED AFTER 101 ITERATIONS / Time: 0h:0m:0s
+
+--------------------------------------------------------------------
+|                    FINALIZING TREE SEARCH                        |
+--------------------------------------------------------------------
+Performs final model parameters optimization
+Estimate model parameters (epsilon = 0.010)
+1. Initial log-likelihood: -40469.730
+Optimal log-likelihood: -40469.730
+Rate parameters:  A-C: 1.00000  A-G: 1.00000  A-T: 1.00000  C-G: 1.00000  C-T: 1.00000  G-T: 1.00000
+Base frequencies:  A: 0.299  C: 0.184  G: 0.196  T: 0.321
+Parameters optimization took 1 rounds (0.000 sec)
+BEST SCORE FOUND : -40469.730
+Total tree length: 0.000
+
+Total number of iterations: 101
+CPU time used for tree search: 0.058 sec (0h:0m:0s)
+Wall-clock time used for tree search: 0.038 sec (0h:0m:0s)
+Total CPU time used: 0.077 sec (0h:0m:0s)
+Total wall-clock time used: 0.061 sec (0h:0m:0s)
+
+Analysis results written to: 
+  IQ-TREE report:                PopSeqs.dat.iqtree
+  Maximum-likelihood tree:       PopSeqs.dat.treefile
+  Likelihood distances:          PopSeqs.dat.mldist
+  Screen log file:               PopSeqs.dat.log
+
+Date and Time: Fri Feb 17 15:01:41 2023

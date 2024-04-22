@@ -8,8 +8,7 @@
 #include <cstring>
 
 void OptimiseMultiRateModel (run_params& p, int n_rates, const vector< vector<sample> >& gseq_data, vector<double>& model_parameters, gsl_rng *rgen) {
-    //cout << "Optimise " << gseq_data.size() << "\n";
-
+    cout << "Optimise " << gseq_data.size() << "\n";
     vector<double> rates;
     for (int i=0;i<n_rates;i++) {
         rates.push_back(0.1);
@@ -27,50 +26,54 @@ void OptimiseMultiRateModel (run_params& p, int n_rates, const vector< vector<sa
     int first=1;
     int reduced=0;
     int fail=0;
-    vector<double> track;
-    for (int it=0;it<100000;it++) {
-        if (first==0) {
-            if (lL>lL_best) {
-                rates_best=rates;
-                error_best=error;
-                double diff=lL-lL_best;
-                DoTrack(diff,track);
-                CheckTrack (reduced,dx,track);
-                lL_best=lL;
-                fail=0;
-                /*cout << "Better " << it << " ";
-                for (int i=0;i<rates.size();i++) {
-                    cout << rates[i] << " ";
-                }
-                cout << lL << "\n";*/
-
-            } else {
-                fail++;
-                rates=rates_best;
-                error=error_best;
-            }
-        }
-        if (fail==10000) {
-            //cout << "End at " << it << "\n";
-            break;
-        }
-        first=0;
-        //Make a change to the parameters
-        for (int i=0;i<rates.size();i++) {
-            rates[i]=rates[i]+(gsl_rng_uniform(rgen)*dx)-(dx/2);
-            if (rates[i]<0) {
-                rates[i]=-rates[i];
-            }
-        }
+    if (gseq_data.size()>0) {
         
-        if (p.fix_error==-1) {
-            error=error+(gsl_rng_uniform(rgen)*dx)-(dx/2);
+        vector<double> track;
+        for (int it=0;it<100000;it++) {
+            
+            if (first==0) {
+                if (lL>lL_best) {
+                    rates_best=rates;
+                    error_best=error;
+                    double diff=lL-lL_best;
+                    DoTrack(diff,track);
+                    CheckTrack (reduced,dx,track);
+                    lL_best=lL;
+                    fail=0;
+                    /*cout << "Better " << it << " ";
+                    for (int i=0;i<rates.size();i++) {
+                        cout << rates[i] << " ";
+                    }
+                    cout << lL << "\n";*/
+                    
+                } else {
+                    fail++;
+                    rates=rates_best;
+                    error=error_best;
+                }
+            }
+            if (fail==10000) {
+                //cout << "End at " << it << "\n";
+                break;
+            }
+            first=0;
+            //Make a change to the parameters
+            for (int i=0;i<rates.size();i++) {
+                rates[i]=rates[i]+(gsl_rng_uniform(rgen)*dx)-(dx/2);
+                if (rates[i]<0) {
+                    rates[i]=-rates[i];
+                }
+            }
+            
+            if (p.fix_error==-1) {
+                error=error+(gsl_rng_uniform(rgen)*dx)-(dx/2);
+            }
+            //Evaluate the likelihood
+            lL=FindLikelihood (n_rates,rates,error,gseq_data);
+            
         }
-        //Evaluate the likelihood
-        lL=FindLikelihood (n_rates,rates,error,gseq_data);
-
+        //cout << "Done loop\n";
     }
-    //cout << "Done loop\n";
     for (int i=0;i<n_rates;i++) {
         model_parameters.push_back(rates_best[i]);
     }
@@ -183,6 +186,9 @@ void UncertaintyMultiRateModel (run_params& p, int n_rates, int parameter, int d
                         model_parameters[i]=model_parameters[i]+(gsl_rng_uniform(rgen)*dx/2);
                     } else {
                         model_parameters[i]=model_parameters[i]-(gsl_rng_uniform(rgen)*dx/2);
+                        if (model_parameters[i]<0) {
+                            model_parameters[i]=-model_parameters[i];
+                        }
                     }
                 } else {
                     model_parameters[i]=model_parameters[i]+(gsl_rng_uniform(rgen)*dx)-(dx/2);

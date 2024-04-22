@@ -42,6 +42,7 @@ void RunModel (run_params& p, const vector<int>& times, const vector< vector<dou
         
         //Find uncertainty in parameters
         if (p.uncertainty==1) {
+            cout << "Do uncertainty here\n";
             double maxL=best_log;
             RefineModels(maxL,outputs);
             
@@ -124,7 +125,6 @@ void ExploreSet (run_params& p, int i, int& best_set, double& best_log, const ve
             //Series of routines to compile an array containing all of the data neded for the optimisation
             GetGSeqDataArray (p,varbin_init,gvarbin,gtimes,gfixpos,gqfixpos,nremoved,gseq_data_array);
 
-
             //Calculate likelihoods for each combination of end-point uncertainty.
             CalculateBestModels (p,st,start_seqs,nremoved,gfixpos,gqfixpos,gseq_data_array,outputs,rgen);
         }
@@ -175,7 +175,7 @@ void CalculateBestModels (run_params& p, int st, const vector< vector<int> >& st
         if (check!=0) { //Don't have a gain of variants in zero time.
             //cout << "Index " << i << " Problem with seq_data\n";
         //} else {
-            OptimiseMultiRateModel (p,2,gseq_data_array[i],model_parameters,rgen);
+            OptimiseMultiRateModel (p,p.sets,gseq_data_array[i],model_parameters,rgen);
             for (int j=0;j<p.sets;j++) {
                 m.rates.push_back(model_parameters[j]);
             }
@@ -184,6 +184,7 @@ void CalculateBestModels (run_params& p, int st, const vector< vector<int> >& st
             m.index=i;
             outputs.push_back(m);
             //Print out details of the individual model - likelihood and which variants fix or are provisional
+            //cout << "Go to indexing\n";
             Indexing (p,i,m,model_parameters,gfixpos,gqfixpos,nremoved);
         }
     }
@@ -234,6 +235,7 @@ void InitialiseLimits (run_params& p, const vector<double>& model_parameters_bes
 }
 
 void ModelRateExtremes (run_params& p, const double maxL, const vector< vector< vector<double> > >& gvarbin_orig, const vector< vector<int> >& gtimes_orig, const vector<modelstore>& outputs, vector< vector<double> >& limits, gsl_rng *rgen) {
+    cout << "Model Rate Extremes\n";
     vector<double> extreme_model_parameters;
     for (int j=0;j<outputs.size();j++) {
         //cout << "Check output " << j << "\n";
@@ -263,7 +265,15 @@ void ModelRateExtremes (run_params& p, const double maxL, const vector< vector< 
         
         for (int m=0;m<=p.sets;m++) {
             for (int n=0;n<=1;n++) {
+                //cout << "M " << m << " N " << n << "\n";
                 UncertaintyMultiRateModel (p,p.sets,m,n,maxL,gseq_data_array[outputs[j].index],initial_model_parameters,model_parameters,extreme_model_parameters,rgen);
+                /*cout << "Limits\n";
+                for (int ii=0;ii<limits.size();ii++) {
+                    for (int jj=0;jj<limits[ii].size();jj++) {
+                        cout << limits[ii][jj] << " ";
+                    }
+                    cout << "\n";
+                }*/
                 if (n==1&&extreme_model_parameters[m]>limits[m][1-n]) {
                     limits[m][1-n]=extreme_model_parameters[m];
                 }
