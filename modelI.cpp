@@ -72,6 +72,7 @@ void ModelSinglePopulation (run_params& p, vector<int> times, vector< vector<dou
 
     
     cout << "Best sequence input\n";
+    //N.B. xfluc data not actually accounted for in the likelihood calculation: Commented out in likelihood.cpp
     for (int j=0;j<seq_data_best.size();j++) {
         cout << j << " " << seq_data_best[j].dt << " " << seq_data_best[j].nfix << " " << seq_data_best[j].nfluc << " " << seq_data_best[j].xfluc.size() << " ";
         for (int j=0;j<seq_data_best[j].xfluc.size();j++) {

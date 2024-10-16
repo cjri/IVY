@@ -8,7 +8,7 @@
 #include <cstring>
 
 void OptimiseMultiRateModel (run_params& p, int n_rates, const vector< vector<sample> >& gseq_data, vector<double>& model_parameters, gsl_rng *rgen) {
-    cout << "Optimise " << gseq_data.size() << "\n";
+    //cout << "Optimise " << gseq_data.size() << "\n";
     vector<double> rates;
     for (int i=0;i<n_rates;i++) {
         rates.push_back(0.1);

@@ -348,8 +348,18 @@ void FindFixationSites (run_params& p, const vector< vector<double> >& varbin, c
     //Compare seuqence trajectories to constant type
     vector<int> min_comp;
     vector<int> zeros;
+    //Question: Is there a 1 in this column?  If not then ignore this variant.
     for (int i=0;i<varbin[0].size();i++) {
-        int z=0;
+        int z=1;
+        for (int k=0;k<varbin.size();k++) {
+            if (varbin[k][i]==1) {
+                z=0;
+            }
+        }
+        zeros.push_back(z);
+    }
+    //Compare sequence trajectories to all-zero and all-one columns
+    for (int i=0;i<varbin[0].size();i++) {
         double min_c=1000;
         for (int j=0;j<constant[0].size();j++) {
             double c=0;
@@ -361,13 +371,8 @@ void FindFixationSites (run_params& p, const vector< vector<double> >& varbin, c
             if (c<min_c) {
                 min_c=c;
             }
-            if (c==0&&j==0) {
-                z=1;
-            }
-
         }
         min_comp.push_back(min_c);
-        zeros.push_back(z);
     }
     //Compare sequence trajectories to fixation types
     vector<int> min_fix;
@@ -532,7 +537,7 @@ void SetupSequenceData (run_params& p, const vector<int>& times, const vector<in
             CalculateSxFluc(p,xf,s);
         }
         //Calculate the probabilites of each outcome - number of stochastic fluctuations
-        
+        //N.B. These are not actually accounted for in the likelihood calculation
         if (p.verb==1) {
             cout << i << " " << s.dt << " " << s.nfix << " " << s.nfluc << " " << s.xfluc.size() << " ";
             for (int j=0;j<s.xfluc.size();j++) {
