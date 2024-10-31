@@ -21,6 +21,7 @@ struct run_params {
     int seed; //For random number generator
     int fix; //Include ambiguous nucleotides
     int sets; //Number of sets into which we divide the sequences
+    int penalty; //Flag to impose a likelihood penalty on populations sharing variants
     string model;
     int systematic; //Flag for systematic search
     int uncertainty; //Flag to calculate uncertainty in parameters

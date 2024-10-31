@@ -1,5 +1,5 @@
 
-void OptimiseMultiRateModel (run_params& p, int n_rates, const vector< vector<sample> >& gseq_data, vector<double>& model_parameters, gsl_rng *rgen);
+void OptimiseMultiRateModel (run_params& p, int n_rates, const double Lpen, const vector< vector<sample> >& gseq_data, vector<double>& model_parameters, gsl_rng *rgen);
 void DoTrack (double diff, vector<double>& track);
 void CheckTrack (int& reduced, double& dx, vector<double>& track);
 double FindLikelihood (int n_rates, vector<double>& rates, double error, const vector< vector<sample> >& gseq_data);

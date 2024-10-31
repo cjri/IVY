@@ -16,6 +16,8 @@ Options:
 
 --error e [Default unspecified] : IVY infers an error rate for sequencing, defined as a Poisson parameter.  If an error rate is specified (as it was in the manuscript accompanying this code, the error rate will be fixed, rather than optimised.  We have not tested the performance of our code while optimising an error rate.
 
+--penalty <flag> [Default 1] : Flag to apply a likelihood penalty in the case that samples from different populations share a variant, implying repeated emergence under the assumptions of the model.  Setting to zero removes the penalty.  The function FindPenalty in model.cpp could be edited to alter the nature of the penalty to the log likelihood.
+
 --sysetmatic s [Default 1] : By default a systematic search is conducted over all possible ways in which the sequences can be partitioned into subpopulations.  Setting this to zero whill examine only a specific set.
 
 --set s [No default] : Specifies the set to examine under the flag --systematic 0.

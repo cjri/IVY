@@ -14,6 +14,7 @@ void GetParameters (run_params& p, int argc, const char **argv) {
     p.systematic=1;
     p.uncertainty=0;
     p.model="I";
+    p.penalty=1;
     p.chosen_set=-1;
     p.fix_error=-1; //Fixed error rate.  -1 implies unfixed
     p.times_file="Times.dat";
@@ -36,6 +37,9 @@ void GetParameters (run_params& p, int argc, const char **argv) {
         } else if (p_switch.compare("--sets")==0) {
                 x++;
                 p.sets=atoi(argv[x]);
+        } else if (p_switch.compare("--penalty")==0) {
+                x++;
+                p.penalty=atoi(argv[x]);
         } else if (p_switch.compare("--uncertainty")==0) {
                 x++;
                 p.uncertainty=atoi(argv[x]);

@@ -18,11 +18,13 @@ void RunModel (run_params& p, const vector<int>& times, const vector< vector<dou
     vector< vector<int> > clusters;
     FindClusters(p,2,varbin,clusters);
 
+    cout << "Clusters\n";
+    
     //Note here: We find all of the sets made up of clusters, keeping clustered data points together.
     vector< vector< vector<int> > > sets;
     CompileSets (p,clusters,sets);
     cout << "Number of sets " << sets.size() << "\n";
-
+    
     if (p.systematic==1) {
         //Systematic search of all possible sets
         int best_set=-1;
@@ -88,6 +90,11 @@ void ExploreSet (run_params& p, int i, int& best_set, double& best_log, const ve
     //We don't need to do the uncertainty calculation in this case.
     
     cout << "Set " << i << "\n";
+    
+    //Calculate penalty for variants found in more than one population.
+    double Lpen=FindPenalty(i,times,varbin,sets);
+    cout << "Sharing Penalty " << Lpen << "\n";
+    
     double maxL=-1e6;
 
     //Store starting data in a vector of sets
@@ -126,7 +133,7 @@ void ExploreSet (run_params& p, int i, int& best_set, double& best_log, const ve
             GetGSeqDataArray (p,varbin_init,gvarbin,gtimes,gfixpos,gqfixpos,nremoved,gseq_data_array);
 
             //Calculate likelihoods for each combination of end-point uncertainty.
-            CalculateBestModels (p,st,start_seqs,nremoved,gfixpos,gqfixpos,gseq_data_array,outputs,rgen);
+            CalculateBestModels (p,st,Lpen,start_seqs,nremoved,gfixpos,gqfixpos,gseq_data_array,outputs,rgen);
         }
             
         int max_index=-1;
@@ -144,8 +151,61 @@ void ExploreSet (run_params& p, int i, int& best_set, double& best_log, const ve
     gtimes=gtimes_orig;
 }
 
+double FindPenalty (const int i, const vector<int>& times, const vector< vector<double> >& varbin, const vector< vector< vector<int> > >& sets) {
+    double Lpen=0;
+    vector<int> overlap; //Number of repeats of a variant across populations + 1
+    for (int l=0;l<varbin[sets[i][0][0]].size();l++) {
+        overlap.push_back(0);
+    }
+    vector<int> inset; //Samples that have been considered
+    for (int l=0;l<times.size();l++) {
+        inset.push_back(1);
+    }
+    double Lfrac=log(varbin[sets[i][0][0]].size()/29782.);  //Rough probability of a repeated variant
+    
+    //Find the number of times variants have been found
+    for (int j=0;j<sets[i].size();j++) { //Subpopulations
+        vector<int> done = overlap;
+        for (int k=0;k<done.size();k++) {
+            done[k]=0;
+        }
+        for (int k=0;k<sets[i][j].size();k++) {//Individuals in subpopulation
+            inset[sets[i][j][k]]=0;
+            for (int l=0;l<varbin[sets[i][j][k]].size();l++) { //Variant positions
+                if (varbin[sets[i][j][k]][l]==1&&done[l]==0) {
+                    overlap[l]++;
+                    done[l]=1;
+                }
+            }
+        }
+    }
+    
+    //Repeat for the individuals not in the main subpopulation.
+    vector<int> done;
+    for (int j=0;j<varbin[0].size();j++) {
+        done.push_back(0);
+    }
+    for (int j=0;j<inset.size();j++) {
+        if (inset[j]==1) {
+            for (int l=0;l<varbin[j].size();l++) { //Variant positions
+                if (varbin[j][l]==1&&done[l]==0) {
+                    overlap[l]++;
+                    done[l]=1;
+                }
+            }
+        }
+    }
+        
+    for (int j=0;j<overlap.size();j++) {
+        if (overlap[j]>1) {
+            Lpen=Lpen+Lfrac;
+        }
+    }
+    return Lpen;
+}
 
-void CalculateBestModels (run_params& p, int st, const vector< vector<int> >& start_seqs, const vector< vector<int> >& nremoved, const vector< vector<int> >& gfixpos, const vector< vector<int> >& gqfixpos, const vector< vector< vector<sample> > >& gseq_data_array, vector<modelstore>& outputs, gsl_rng *rgen) {
+
+void CalculateBestModels (run_params& p, int st, const double Lpen, const vector< vector<int> >& start_seqs, const vector< vector<int> >& nremoved, const vector< vector<int> >& gfixpos, const vector< vector<int> >& gqfixpos, const vector< vector< vector<sample> > >& gseq_data_array, vector<modelstore>& outputs, gsl_rng *rgen) {
     vector<double> model_parameters;
     for (int i=0;i<gseq_data_array.size();i++) {
         modelstore m;
@@ -175,7 +235,7 @@ void CalculateBestModels (run_params& p, int st, const vector< vector<int> >& st
         if (check!=0) { //Don't have a gain of variants in zero time.
             //cout << "Index " << i << " Problem with seq_data\n";
         //} else {
-            OptimiseMultiRateModel (p,p.sets,gseq_data_array[i],model_parameters,rgen);
+            OptimiseMultiRateModel (p,p.sets,Lpen,gseq_data_array[i],model_parameters,rgen);
             for (int j=0;j<p.sets;j++) {
                 m.rates.push_back(model_parameters[j]);
             }

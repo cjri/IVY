@@ -1,7 +1,8 @@
 
 void RunModel (run_params& p, const vector<int>& times, const vector< vector<double> >& varbin, gsl_rng *rgen);
 void ExploreSet (run_params& p, int i, int& best_set, double& best_log, const vector<int>& times, vector<modelstore>& outputs, const vector< vector<double> >& varbin, const vector< vector< vector<int> > >& sets, gsl_rng *rgen);
-void CalculateBestModels (run_params& p, int st, const vector< vector<int> >& start_seqs, const vector< vector<int> >& nremoved, const vector< vector<int> >& gfixpos, const vector< vector<int> >& gqfixpos, const vector< vector< vector<sample> > >& gseq_data_array, vector<modelstore>& outputs, gsl_rng *rgen);
+double FindPenalty (const int i, const vector<int>& times, const vector< vector<double> >& varbin, const vector< vector< vector<int> > >& sets);
+void CalculateBestModels (run_params& p, int st, const double Lpen, const vector< vector<int> >& start_seqs, const vector< vector<int> >& nremoved, const vector< vector<int> >& gfixpos, const vector< vector<int> >& gqfixpos, const vector< vector< vector<sample> > >& gseq_data_array, vector<modelstore>& outputs, gsl_rng *rgen);
 double FindBestModel (int& max_index, const vector<modelstore>& outputs);
 void RefineModels (double maxL, vector<modelstore>& outputs);
 void GetBestModelParameters (double maxL, const vector<modelstore>& outputs, vector<double>& model_parameters_best);

@@ -7,7 +7,7 @@
 #include <string>
 #include <cstring>
 
-void OptimiseMultiRateModel (run_params& p, int n_rates, const vector< vector<sample> >& gseq_data, vector<double>& model_parameters, gsl_rng *rgen) {
+void OptimiseMultiRateModel (run_params& p, int n_rates, const double Lpen, const vector< vector<sample> >& gseq_data, vector<double>& model_parameters, gsl_rng *rgen) {
     //cout << "Optimise " << gseq_data.size() << "\n";
     vector<double> rates;
     for (int i=0;i<n_rates;i++) {
@@ -74,6 +74,7 @@ void OptimiseMultiRateModel (run_params& p, int n_rates, const vector< vector<sa
         }
         //cout << "Done loop\n";
     }
+    lL_best=lL_best+Lpen; //Add in penalty term here
     for (int i=0;i<n_rates;i++) {
         model_parameters.push_back(rates_best[i]);
     }
