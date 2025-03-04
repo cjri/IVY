@@ -2,6 +2,8 @@
 void GetGSeqDataArray (run_params& p, vector<double> varbin_init, vector< vector< vector<double> > >& gvarbin, vector< vector<int> >& gtimes, vector< vector<int> >& gfixpos, vector< vector<int> >& gqfixpos, vector< vector<int> >& nremoved, vector< vector< vector<sample> > >& gseq_data_array);
 
 void GetStartSeqs (run_params& p, const vector< vector< vector<double> > >& gvarbin, vector< vector<int> >& start_seqs);
+void BinaryCount (unsigned int ident, vector< vector<int> >& allbin);
+
 void GetOriginalSeq (run_params& p, int st, const vector< vector<int> >& start_seqs, vector<double>& varbin_init);
 void AddStartToGVarbin (const vector<double>& varbin_init, vector< vector< vector<double> > >& gvarbin);
 void RevertGVarbin(vector< vector< vector<double> > >& gvarbin);

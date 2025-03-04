@@ -178,12 +178,13 @@ void GetStartSeqs (run_params& p, const vector< vector< vector<double> > >& gvar
         
         //Binary counting routine - binary strings of length ident.size()
         vector< vector<int> > allbin;
-        vector<int> bin;
+        BinaryCount (ident.size(),allbin);
+        int tot=pow(2,ident.size());
+        /*vector<int> bin;
         for (int i=0;i<ident.size();i++) {
             bin.push_back(0);
         }
         index=0;
-        int tot=pow(2,ident.size());
         allbin.push_back(bin);
         for (int j=0;j<tot-1;j++) {
             index=0;
@@ -197,7 +198,7 @@ void GetStartSeqs (run_params& p, const vector< vector< vector<double> > >& gvar
                 bin[index]=1;
             }
             allbin.push_back(bin);
-        }
+        }*/
 
         //Generate a set of the number of variants in each set included if there is a 1 at allbin[i][j]
         vector< vector<int> > numbers;
@@ -237,16 +238,82 @@ void GetStartSeqs (run_params& p, const vector< vector< vector<double> > >& gvar
             }
         }
     }
-    if (p.sets>=3) {  //Easier to find start sequences
+    if (p.sets>=3) {  //Find shared variants in the initial samples
+        cout << "Find shared variants\n";
         vector<int> start;
         for (int k=0;k<gvarbin[0][0].size();k++) {
             start.push_back(0);
         }
-        start_seqs.push_back(start);
+        vector<int> start_orig=start;
+        
+        //Find common variants in initial sequences - first one in each varbin
+        vector<int> common;
+        for (int m=0;m<gvarbin.size()-1;m++) {
+            for (int n=m+1;n<gvarbin.size();n++) {
+                for (int k=0;k<gvarbin[0][0].size();k++) {
+                    if (gvarbin[m][0][k]==1&&gvarbin[n][0][k]==1) {
+                        common.push_back(k);
+                    }
+                }
+            }
+        }
+        sort(common.begin(),common.end());
+        common.erase(unique(common.begin(),common.end()),common.end());
+        
+        if (common.size()>0) {
+            
+            vector< vector<int> > allbin;
+            BinaryCount (common.size(),allbin);
+            
+            
+            //Push back different start sequences
+            if (p.verb==1) {
+                cout << "Starts " << common.size() << "\n";
+                for (int i=0;i<common.size();i++) {
+                    cout << common[i] << " ";
+                }
+                cout << "\n";
+            }
+            
+            for (int i=0;i<allbin.size();i++) {
+                start=start_orig;
+                for (int j=0;j<allbin[i].size();j++) {
+                    if (allbin[i][j]==1) {
+                        start[common[j]]=1;
+                    }
+                }
+                start_seqs.push_back(start);
+            }
+        } else {
+            start_seqs.push_back(start);
+        }
+        
     }
     cout << "Number of start seqs " << start_seqs.size() << "\n";
 }
 
+void BinaryCount (unsigned int ident, vector< vector<int> >& allbin) {
+    vector<int> bin;
+    for (int i=0;i<ident;i++) {
+        bin.push_back(0);
+    }
+    int index=0;
+    int tot=pow(2,ident);
+    allbin.push_back(bin);
+    for (int j=0;j<tot-1;j++) {
+        index=0;
+        if (bin[index]==0) {
+            bin[index]=1;
+        } else {
+            while (bin[index]==1) {
+                bin[index]=0;
+                index++;
+            }
+            bin[index]=1;
+        }
+        allbin.push_back(bin);
+    }
+}
 
 void GetOriginalSeq (run_params& p, int st, const vector< vector<int> >& start_seqs, vector<double>& varbin_init) {
     for (int j=0;j<start_seqs[st].size();j++) {
